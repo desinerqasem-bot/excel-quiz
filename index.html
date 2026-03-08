@@ -137,6 +137,12 @@
     </main>
 
     <script>
+        // الأصوات
+        const correctSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3');
+        const wrongSound = new Audio('https://assets.mixkit.co/active_storage/sfx/3148/3148-preview.mp3');
+        correctSound.volume = 0.5;
+        wrongSound.volume = 0.5;
+
         const quizData = [
             {
                 question: "ما هو الاختصار المستخدم في لوحة المفاتيح لتحويل نطاق البيانات إلى جدول (Table)؟",
@@ -269,6 +275,8 @@
 
             // Highlight chosen answer
             if (isCorrect) {
+                correctSound.currentTime = 0;
+                correctSound.play();
                 score += 10;
                 scoreDisplay.innerText = `النقاط: ${score}`;
                 btnElement.classList.add('correct-answer');
@@ -276,6 +284,8 @@
                 showExplanation(true, q.rationale);
                 fireConfetti(btnElement);
             } else {
+                wrongSound.currentTime = 0;
+                wrongSound.play();
                 btnElement.classList.add('wrong-answer');
                 btnElement.querySelector('i').className = 'fas fa-times text-xs text-red-400';
                 btnElement.querySelector('div').classList.add('border-red-400');

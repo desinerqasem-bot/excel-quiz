@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقييم مهارات الإكسل | الموارد البشرية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(-45deg, #0f172a, #1e293b, #064e3b, #0f172a);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: white;
+            overflow-x: hidden;
+        }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .option-btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: center;
+        }
+        .option-btn:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.01);
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(52, 211, 153, 0.5);
+            box-shadow: 0 10px 20px -10px rgba(52, 211, 153, 0.3);
+        }
+        .animate-enter {
+            animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .animate-exit {
+            animation: slideDownFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideDownFade {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-30px); }
+        }
+        .correct-answer {
+            background: rgba(16, 185, 129, 0.2) !important;
+            border-color: #10b981 !important;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+        }
+        .wrong-answer {
+            background: rgba(239, 68, 68, 0.2) !important;
+            border-color: #ef4444 !important;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 sm:p-8">
+
+    <!-- Background decorative elements -->
+    <div class="fixed top-[-10%] left-[-10%] w-96 h-96 bg-emerald-500 rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-pulse pointer-events-none z-0"></div>
+    <div class="fixed bottom-[-10%] right-[-10%] w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-pulse pointer-events-none z-0" style="animation-delay: 2s;"></div>
+
+    <main class="w-full max-w-4xl relative z-10">
+        
+        <!-- Header -->
+        <header class="text-center mb-10 animate-enter" style="animation-delay: 0.1s;">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-400 to-teal-600 mb-6 shadow-lg shadow-emerald-500/30">
+                <i class="fas fa-chart-pie text-3xl text-white"></i>
+            </div>
+            <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-3 text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 to-white">
+                تقييم مهارات الإكسل
+            </h1>
+            <p class="text-slate-300 text-lg">تحليل البيانات وإعداد التقارير للموارد البشرية</p>
+        </header>
+
+        <!-- Quiz Container -->
+        <div id="quiz-app" class="glass-panel rounded-3xl p-6 sm:p-10 relative overflow-hidden animate-enter" style="animation-delay: 0.2s;">
+            
+            <!-- Progress Section -->
+            <div class="mb-8 flex justify-between items-center text-sm font-medium text-slate-300">
+                <span id="question-counter" class="bg-white/10 px-4 py-1.5 rounded-full backdrop-blur-sm border border-white/5">السؤال 1 من 10</span>
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-star text-emerald-400"></i>
+                    <span id="score-display">النقاط: 0</span>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-800/50 rounded-full h-1.5 mb-10 overflow-hidden">
+                <div id="progress-bar" class="bg-gradient-to-r from-emerald-400 to-teal-500 h-1.5 rounded-full transition-all duration-700 ease-out" style="width: 10%"></div>
+            </div>
+
+            <!-- Question Area -->
+            <div id="question-container" class="transition-opacity duration-300">
+                <h2 id="question-text" class="text-2xl sm:text-3xl font-bold leading-relaxed mb-8 text-white">
+                    جاري تحميل السؤال...
+                </h2>
+
+                <!-- Options Grid -->
+                <div id="options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Options will be injected here -->
+                </div>
+            </div>
+
+            <!-- Explanation Box (Hidden initially) -->
+            <div id="explanation-box" class="hidden mt-8 p-5 rounded-2xl border border-white/10 bg-slate-800/60 backdrop-blur-md transform transition-all duration-300">
+                <div class="flex items-start gap-4">
+                    <div id="explanation-icon" class="mt-1 text-2xl"></div>
+                    <div>
+                        <h4 id="explanation-title" class="font-bold text-lg mb-2"></h4>
+                        <p id="explanation-text" class="text-slate-300 leading-relaxed"></p>
+                    </div>
+                </div>
+                <button id="next-btn" onclick="nextQuestion()" class="mt-6 w-full py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-lg transition-all shadow-lg shadow-emerald-500/25 flex justify-center items-center gap-2">
+                    <span>السؤال التالي</span>
+                    <i class="fas fa-arrow-left text-sm"></i>
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        const quizData = [
+            {
+                question: "ما هو الاختصار المستخدم في لوحة المفاتيح لتحويل نطاق البيانات إلى جدول (Table)؟",
+                options: ["Ctrl + T", "Ctrl + A", "Ctrl + C", "Ctrl + V"],
+                correctAnswer: 0,
+                rationale: "يعد الاختصار Ctrl + T الطريقة الأسرع والموثوقة لتحويل البيانات النصية العادية إلى جدول ديناميكي يسهل التعامل معه."
+            },
+            {
+                question: "من ميزات الجداول (Table)، ماذا يحدث عند كتابة معادلة في الصف الأول من عمود فارغ؟",
+                options: ["تُحفظ المعادلة في الخلية الأولى فقط", "تنتشر المعادلة لكل الصفوف تلقائياً", "يظهر خطأ يمنع إتمام العملية", "يتم مسح البيانات القديمة تلقائياً"],
+                correctAnswer: 1,
+                rationale: "ميزة (Calculated Columns) في الجداول تقوم بنسخ المعادلة وتطبيقها تلقائياً على كافة صفوف العمود لتوفير الوقت وتقليل الأخطاء."
+            },
+            {
+                question: "ما هي المعادلة الصحيحة لحساب 'تاريخ التقاعد' للموظف بافتراض أن سن التقاعد هو 60 عاماً؟",
+                options: ["=TODAY()+60", "=YEAR([تاريخ الميلاد])+60", "=DATE(YEAR([تاريخ الميلاد])+60, MONTH([تاريخ الميلاد]), DAY([تاريخ الميلاد]))", "=IFS([تاريخ الميلاد]>60, 'متقاعد')"],
+                correctAnswer: 2,
+                rationale: "تستخدم دالة DATE لبناء تاريخ جديد من خلال استخراج أجزاء التاريخ الأصلي (يوم، شهر، سنة) وإضافة 60 عاماً إلى جزء السنة."
+            },
+            {
+                question: "في عمود 'تنبيه الإقامة'، ما هي الميزة الأساسية لاستخدام دالة IFS بدلاً من دالة IF المتداخلة؟",
+                options: ["تختبر شروطاً متعددة بشكل متسلسل وأكثر وضوحاً", "تجمع القيم بناءً على شرط واحد", "تبحث عن بيانات الموظف في أوراق عمل أخرى", "تقوم بعدّ الخلايا المطابقة لشرط معين"],
+                correctAnswer: 0,
+                rationale: "دالة IFS صُممت خصيصاً لتجنب تعقيد دالة IF المتداخلة، حيث تختبر الشروط بشكل متتالٍ وتتوقف عند أول شرط يتحقق."
+            },
+            {
+                question: "عند تطبيق 'التنسيق الشرطي' لتلوين صف الموظف بالكامل، ما هي القاعدة الصحيحة لتثبيت المرجع؟",
+                options: ["تثبيت الصف والعمود معاً (=$P$2)", "عدم التثبيت إطلاقاً (=P2)", "استخدام دالة XLOOKUP", "تثبيت العمود وترك الصف متحركاً (=$P2)"],
+                correctAnswer: 3,
+                rationale: "تثبيت العمود بعلامة ($) يضمن أن يقرأ الإكسل شرط التلوين من عمود محدد دائماً، مع السماح له بالانتقال للتحقق من كل صف على حدة."
+            },
+            {
+                question: "ما هي الدالة الأحدث والأسرع لاستدعاء اسم الموظف بمجرد إدخال رقمه الوظيفي؟",
+                options: ["COUNTIF", "XLOOKUP", "AVERAGE", "SUM"],
+                correctAnswer: 1,
+                rationale: "دالة XLOOKUP هي البديل العصري والأقوى لدوال البحث القديمة، وتتميز بقدرتها على البحث في أي اتجاه وإدارة الأخطاء المدمجة."
+            },
+            {
+                question: "ماذا يعني الرمز [@] عند كتابة المعادلات داخل الجداول (المراجع الهيكلية)؟",
+                options: ["كافة القيم الموجودة في الجدول", "استخراج تاريخ اليوم الحالي", "تثبيت الخلية بشكل مطلق", "القيمة الموجودة في نفس الصف للعمود المحدد"],
+                correctAnswer: 3,
+                rationale: "الرمز [@] يُعرف بالمرجع الهيكلي، ويخبر الإكسل بالنظر فقط إلى الخلية المتقاطعة مع الصف الحالي الذي تُكتب فيه المعادلة."
+            },
+            {
+                question: "في الجداول المحورية، عند سحب حقل نصي (مثل 'رقم الموظف') إلى منطقة القيم (Values)، ما الإجراء الافتراضي للبرنامج؟",
+                options: ["يقوم بجمع القيم (Sum)", "يقوم بحساب المتوسط (Average)", "يقوم بعدّ القيم (Count)", "يرفض العملية لوجود نصوص"],
+                correctAnswer: 2,
+                rationale: "الإكسل ذكي بما يكفي ليدرك أن جمع أو إيجاد متوسط الحقول النصية غير منطقي، فيقوم تلقائياً بتغيير نوع الحساب إلى العد (Count)."
+            },
+            {
+                question: "ما هو نوع المخطط (Chart) الأنسب لعرض نسبة الموظفين الموزعين حسب الجنسيات؟",
+                options: ["المخطط العمودي (Column)", "المخطط الدائري (Pie)", "المخطط الخطي (Line)", "المخطط المبعثر (Scatter)"],
+                correctAnswer: 1,
+                rationale: "المخطط الدائري يظل الخيار الأفضل بصرياً لتمثيل الأجزاء من كل، وإظهار النسب المئوية للمكونات المختلفة."
+            },
+            {
+                question: "كيف يمكن حساب 'متوسط' الرواتب لكل مسمى وظيفي باستخدام الجداول المحورية (PivotTable)؟",
+                options: ["استخدام دالة AVERAGEIF خارج الجدول", "تغيير إعدادات الحقل (Value Field Settings) إلى Average", "استخدام الآلة الحاسبة وتدوينها يدوياً", "لا يمكن حساب المتوسط في الجداول المحورية"],
+                correctAnswer: 1,
+                rationale: "توفر الجداول المحورية خياراً مباشراً لتغيير طريقة تلخيص البيانات، حيث يمكن التبديل من الجمع إلى المتوسط بضغطة زر من إعدادات الحقل."
+            }
+        ];
+
+        let currentQIndex = 0;
+        let score = 0;
+        let isAnswering = false;
+        let autoAdvanceTimeout;
+
+        const qContainer = document.getElementById('question-container');
+        const optionsGrid = document.getElementById('options-grid');
+        const qText = document.getElementById('question-text');
+        const qCounter = document.getElementById('question-counter');
+        const scoreDisplay = document.getElementById('score-display');
+        const progressBar = document.getElementById('progress-bar');
+        const explanationBox = document.getElementById('explanation-box');
+
+        function initQuiz() {
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            isAnswering = false;
+            const q = quizData[currentQIndex];
+            
+            // Update UI Counters
+            qCounter.innerText = `السؤال ${currentQIndex + 1} من ${quizData.length}`;
+            progressBar.style.width = `${((currentQIndex) / quizData.length) * 100}%`;
+            
+            // Add Exit Animation to old content
+            qContainer.classList.add('opacity-0');
+            explanationBox.classList.add('hidden');
+            
+            setTimeout(() => {
+                // Populate new content
+                qText.innerText = q.question;
+                optionsGrid.innerHTML = '';
+                
+                q.options.forEach((opt, index) => {
+                    const isEnglish = /^[a-zA-Z=]/.test(opt);
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn w-full p-5 rounded-2xl bg-white/5 border border-white/10 text-white font-medium text-lg leading-relaxed flex items-center gap-4 group cursor-pointer';
+                    btn.innerHTML = `
+                        <div class="w-6 h-6 shrink-0 rounded-full border-2 border-white/20 flex items-center justify-center group-hover:border-emerald-400 transition-colors">
+                            <i class="fas fa-check text-xs opacity-0 text-emerald-400"></i>
+                        </div>
+                        <span class="flex-1 ${isEnglish ? 'text-left font-mono' : 'text-right'}" dir="${isEnglish ? 'ltr' : 'rtl'}">${opt}</span>
+                    `;
+
+                    btn.onclick = () => selectAnswer(index, btn);
+                    optionsGrid.appendChild(btn);
+                });
+
+                // Enter Animation
+                qContainer.classList.remove('opacity-0');
+                qContainer.classList.add('animate-enter');
+                setTimeout(() => qContainer.classList.remove('animate-enter'), 600);
+            }, 300);
+        }
+
+        function selectAnswer(selectedIndex, btnElement) {
+            if (isAnswering) return;
+            isAnswering = true;
+
+            const q = quizData[currentQIndex];
+            const isCorrect = selectedIndex === q.correctAnswer;
+            const allBtns = optionsGrid.querySelectorAll('button');
+
+            // Disable all buttons
+            allBtns.forEach(btn => btn.disabled = true);
+
+            // Highlight chosen answer
+            if (isCorrect) {
+                score += 10;
+                scoreDisplay.innerText = `النقاط: ${score}`;
+                btnElement.classList.add('correct-answer');
+                btnElement.querySelector('i').classList.remove('opacity-0');
+                showExplanation(true, q.rationale);
+                fireConfetti(btnElement);
+            } else {
+                btnElement.classList.add('wrong-answer');
+                btnElement.querySelector('i').className = 'fas fa-times text-xs text-red-400';
+                btnElement.querySelector('div').classList.add('border-red-400');
+                
+                // Highlight correct answer
+                allBtns[q.correctAnswer].classList.add('correct-answer');
+                showExplanation(false, q.rationale);
+            }
+        }
+
+        function showExplanation(isCorrect, text) {
+            const title = document.getElementById('explanation-title');
+            const msg = document.getElementById('explanation-text');
+            const icon = document.getElementById('explanation-icon');
+
+            explanationBox.classList.remove('hidden', 'opacity-0', 'translate-y-4');
+            
+            if (isCorrect) {
+                icon.innerHTML = '<i class="fas fa-check-circle text-emerald-400"></i>';
+                title.innerText = 'إجابة صحيحة!';
+                title.className = 'font-bold text-xl mb-2 text-emerald-400';
+            } else {
+                icon.innerHTML = '<i class="fas fa-times-circle text-red-400"></i>';
+                title.innerText = 'إجابة خاطئة';
+                title.className = 'font-bold text-xl mb-2 text-red-400';
+            }
+            
+            msg.innerText = text;
+            
+            // Setup Next button text if last question
+            if(currentQIndex === quizData.length - 1) {
+                document.getElementById('next-btn').innerHTML = '<span>عرض النتيجة النهائية</span> <i class="fas fa-trophy text-sm"></i>';
+            }
+
+            // Auto advance after 4.5 seconds
+            if(autoAdvanceTimeout) clearTimeout(autoAdvanceTimeout);
+            autoAdvanceTimeout = setTimeout(() => {
+                nextQuestion();
+            }, 4500);
+        }
+
+        function nextQuestion() {
+            if(autoAdvanceTimeout) clearTimeout(autoAdvanceTimeout);
+            
+            currentQIndex++;
+            if (currentQIndex < quizData.length) {
+                loadQuestion();
+            } else {
+                showFinalResult();
+            }
+        }
+
+        function showFinalResult() {
+            progressBar.style.width = '100%';
+            qContainer.classList.add('opacity-0');
+            explanationBox.classList.add('hidden');
+            
+            setTimeout(() => {
+                const percentage = Math.round((score / (quizData.length * 10)) * 100);
+                let message, iconClass, colorClass;
+
+                if (percentage >= 90) {
+                    message = "مستوى احترافي مذهل! أنت جاهز لإدارة أعقد البيانات.";
+                    iconClass = "fa-crown";
+                    colorClass = "text-yellow-400";
+                    fireHugeConfetti();
+                } else if (percentage >= 60) {
+                    message = "أداء جيد جداً! مع قليل من الممارسة ستصبح خبيراً.";
+                    iconClass = "fa-thumbs-up";
+                    colorClass = "text-emerald-400";
+                } else {
+                    message = "تحتاج إلى مراجعة الدليل وممارسة التطبيقات العملية أكثر.";
+                    iconClass = "fa-book-open";
+                    colorClass = "text-blue-400";
+                }
+
+                qContainer.innerHTML = `
+                    <div class="text-center py-8 animate-enter">
+                        <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-white/5 border-2 border-white/10 mb-6">
+                            <i class="fas ${iconClass} text-5xl ${colorClass}"></i>
+                        </div>
+                        <h2 class="text-4xl font-bold mb-4">النتيجة النهائية</h2>
+                        <div class="text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300 mb-6 drop-shadow-lg">
+                            ${percentage}%
+                        </div>
+                        <p class="text-xl text-slate-300 mb-10 leading-relaxed">${message}</p>
+                        <button onclick="location.reload()" class="px-8 py-4 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-lg transition-all flex items-center justify-center gap-3 mx-auto group">
+                            <i class="fas fa-redo group-hover:-rotate-180 transition-transform duration-500"></i>
+                            <span>إعادة التقييم</span>
+                        </button>
+                    </div>
+                `;
+                qContainer.classList.remove('opacity-0');
+            }, 300);
+        }
+
+        function fireConfetti(element) {
+            const rect = element.getBoundingClientRect();
+            const x = (rect.left + rect.width / 2) / window.innerWidth;
+            const y = (rect.top + rect.height / 2) / window.innerHeight;
+            
+            confetti({
+                particleCount: 50,
+                spread: 60,
+                origin: { x, y },
+                colors: ['#34d399', '#10b981', '#059669', '#ffffff']
+            });
+        }
+
+        function fireHugeConfetti() {
+            const duration = 3000;
+            const end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 5,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: ['#fcd34d', '#fbbf24', '#f59e0b', '#34d399']
+                });
+                confetti({
+                    particleCount: 5,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: ['#fcd34d', '#fbbf24', '#f59e0b', '#34d399']
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', initQuiz);
+    </script>
+</body>
+</html>

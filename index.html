@@ -33,12 +33,23 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             transform-origin: center;
         }
-        .option-btn:hover:not(:disabled) {
-            transform: translateY(-3px) scale(1.01);
-            background: rgba(255, 255, 255, 0.15);
-            border-color: rgba(52, 211, 153, 0.5);
-            box-shadow: 0 10px 20px -10px rgba(52, 211, 153, 0.3);
+        
+        /* هنا التعديل: تفعيل تأثير المرور (Hover) فقط للأجهزة التي تدعم الماوس لمنع تعليق الجوال */
+        @media (hover: hover) {
+            .option-btn:hover:not(:disabled) {
+                transform: translateY(-3px) scale(1.01);
+                background: rgba(255, 255, 255, 0.15);
+                border-color: rgba(52, 211, 153, 0.5);
+                box-shadow: 0 10px 20px -10px rgba(52, 211, 153, 0.3);
+            }
         }
+        
+        /* تأثير عند الضغط الفعلي لمس/كليك */
+        .option-btn:active:not(:disabled) {
+            transform: scale(0.98);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
         .animate-enter {
             animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
@@ -63,7 +74,6 @@
             border-color: #ef4444 !important;
         }
         
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
@@ -72,13 +82,11 @@
 </head>
 <body class="min-h-screen flex items-center justify-center p-4 sm:p-8">
 
-    <!-- Background decorative elements -->
     <div class="fixed top-[-10%] left-[-10%] w-96 h-96 bg-emerald-500 rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-pulse pointer-events-none z-0"></div>
     <div class="fixed bottom-[-10%] right-[-10%] w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-pulse pointer-events-none z-0" style="animation-delay: 2s;"></div>
 
     <main class="w-full max-w-4xl relative z-10">
         
-        <!-- Header -->
         <header class="text-center mb-10 animate-enter" style="animation-delay: 0.1s;">
             <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-400 to-teal-600 mb-6 shadow-lg shadow-emerald-500/30">
                 <i class="fas fa-chart-pie text-3xl text-white"></i>
@@ -89,10 +97,8 @@
             <p class="text-slate-300 text-lg">تحليل البيانات وإعداد التقارير للموارد البشرية</p>
         </header>
 
-        <!-- Quiz Container -->
         <div id="quiz-app" class="glass-panel rounded-3xl p-6 sm:p-10 relative overflow-hidden animate-enter" style="animation-delay: 0.2s;">
             
-            <!-- Progress Section -->
             <div class="mb-8 flex justify-between items-center text-sm font-medium text-slate-300">
                 <span id="question-counter" class="bg-white/10 px-4 py-1.5 rounded-full backdrop-blur-sm border border-white/5">السؤال 1 من 10</span>
                 <div class="flex items-center gap-2">
@@ -101,24 +107,20 @@
                 </div>
             </div>
 
-            <!-- Progress Bar -->
             <div class="w-full bg-slate-800/50 rounded-full h-1.5 mb-10 overflow-hidden">
                 <div id="progress-bar" class="bg-gradient-to-r from-emerald-400 to-teal-500 h-1.5 rounded-full transition-all duration-700 ease-out" style="width: 10%"></div>
             </div>
 
-            <!-- Question Area -->
             <div id="question-container" class="transition-opacity duration-300">
                 <h2 id="question-text" class="text-2xl sm:text-3xl font-bold leading-relaxed mb-8 text-white">
                     جاري تحميل السؤال...
                 </h2>
 
-                <!-- Options Grid -->
                 <div id="options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Options will be injected here -->
+                    <!-- Options -->
                 </div>
             </div>
 
-            <!-- Explanation Box (Hidden initially) -->
             <div id="explanation-box" class="hidden mt-8 p-5 rounded-2xl border border-white/10 bg-slate-800/60 backdrop-blur-md transform transition-all duration-300">
                 <div class="flex items-start gap-4">
                     <div id="explanation-icon" class="mt-1 text-2xl"></div>
@@ -137,7 +139,6 @@
     </main>
 
     <script>
-        // الأصوات
         const correctSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3');
         const wrongSound = new Audio('https://assets.mixkit.co/active_storage/sfx/3148/3148-preview.mp3');
         correctSound.volume = 0.5;
@@ -227,25 +228,23 @@
             isAnswering = false;
             const q = quizData[currentQIndex];
             
-            // Update UI Counters
             qCounter.innerText = `السؤال ${currentQIndex + 1} من ${quizData.length}`;
             progressBar.style.width = `${((currentQIndex) / quizData.length) * 100}%`;
             
-            // Add Exit Animation to old content
             qContainer.classList.add('opacity-0');
             explanationBox.classList.add('hidden');
             
             setTimeout(() => {
-                // Populate new content
                 qText.innerText = q.question;
                 optionsGrid.innerHTML = '';
                 
                 q.options.forEach((opt, index) => {
                     const isEnglish = /^[a-zA-Z=]/.test(opt);
                     const btn = document.createElement('button');
+                    // تم تعديل الكلاس ليعتمد على التصميم المحدث للـ hover
                     btn.className = 'option-btn w-full p-5 rounded-2xl bg-white/5 border border-white/10 text-white font-medium text-lg leading-relaxed flex items-center gap-4 group cursor-pointer';
                     btn.innerHTML = `
-                        <div class="w-6 h-6 shrink-0 rounded-full border-2 border-white/20 flex items-center justify-center group-hover:border-emerald-400 transition-colors">
+                        <div class="w-6 h-6 shrink-0 rounded-full border-2 border-white/20 flex items-center justify-center md:group-hover:border-emerald-400 transition-colors">
                             <i class="fas fa-check text-xs opacity-0 text-emerald-400"></i>
                         </div>
                         <span class="flex-1 ${isEnglish ? 'text-left font-mono' : 'text-right'}" dir="${isEnglish ? 'ltr' : 'rtl'}">${opt}</span>
@@ -255,7 +254,6 @@
                     optionsGrid.appendChild(btn);
                 });
 
-                // Enter Animation
                 qContainer.classList.remove('opacity-0');
                 qContainer.classList.add('animate-enter');
                 setTimeout(() => qContainer.classList.remove('animate-enter'), 600);
@@ -270,10 +268,8 @@
             const isCorrect = selectedIndex === q.correctAnswer;
             const allBtns = optionsGrid.querySelectorAll('button');
 
-            // Disable all buttons
             allBtns.forEach(btn => btn.disabled = true);
 
-            // Highlight chosen answer
             if (isCorrect) {
                 correctSound.currentTime = 0;
                 correctSound.play();
@@ -290,7 +286,6 @@
                 btnElement.querySelector('i').className = 'fas fa-times text-xs text-red-400';
                 btnElement.querySelector('div').classList.add('border-red-400');
                 
-                // Highlight correct answer
                 allBtns[q.correctAnswer].classList.add('correct-answer');
                 showExplanation(false, q.rationale);
             }
@@ -315,12 +310,10 @@
             
             msg.innerText = text;
             
-            // Setup Next button text if last question
             if(currentQIndex === quizData.length - 1) {
                 document.getElementById('next-btn').innerHTML = '<span>عرض النتيجة النهائية</span> <i class="fas fa-trophy text-sm"></i>';
             }
 
-            // Auto advance after 4.5 seconds
             if(autoAdvanceTimeout) clearTimeout(autoAdvanceTimeout);
             autoAdvanceTimeout = setTimeout(() => {
                 nextQuestion();
@@ -421,7 +414,6 @@
             }());
         }
 
-        // Initialize
         document.addEventListener('DOMContentLoaded', initQuiz);
     </script>
 </body>
